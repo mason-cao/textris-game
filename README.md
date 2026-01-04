@@ -34,25 +34,6 @@ Blocks fall from the top of the screen, each containing a random letter. Your go
 * **CSS3** (Styling the UI layout)
 * **External API:** Uses `allorigins.win` as a CORS proxy to fetch the wordlist.
 
-## 🚀 Running Locally
-
-You don't need to install Node.js or any complex servers to run this game.
-
-1.  **Clone the repository:**
-    ```bash
-    git clone [https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git](https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git)
-    ```
-2.  **Open the file:**
-    Navigate to the folder and double-click `index.html`.
-    
-    *Note: You must have an active internet connection for the dictionary to load properly.*
-
-## 🔮 Future Improvements
-
-* [ ] Add Sound Effects and Background Music.
-* [ ] Add "Hold Piece" functionality (Press C to hold).
-* [ ] Mobile touch controls.
-* [ ] Dark/Light mode toggle.
 
 ## 📄 Credits
 
