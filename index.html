@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Textris: Word Puzzle</title>
+    <title>Textris Pro: Word Puzzle</title>
     <style>
         body {
-            background-color: #202028;
+            background-color: #1a1a20;
             color: #fff;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
@@ -12,23 +12,29 @@
             justify-content: center;
             height: 100vh;
             margin: 0;
-            overflow: hidden; /* Prevents scrolling */
+            overflow: hidden;
         }
 
-        #game-container {
+        #game-layout {
             display: flex;
-            align-items: flex-start;
             gap: 20px;
-            padding: 20px;
-            background-color: #2a2a35;
-            border-radius: 10px;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            padding: 25px;
+            background-color: #252530;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            border: 1px solid #333;
+        }
+
+        .canvas-container {
+            position: relative;
+            border: 3px solid #444;
+            border-radius: 4px;
+            box-shadow: inset 0 0 20px #000;
         }
 
         canvas {
-            border: 2px solid #444;
-            background-color: #000;
             display: block;
+            background-color: #000;
         }
 
         #sidebar {
@@ -38,92 +44,125 @@
             gap: 15px;
         }
 
+        .panel {
+            background: #333;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #444;
+        }
+
         #title {
-            font-size: 28px;
-            font-weight: bold;
+            font-size: 32px;
+            font-weight: 800;
             color: #fff;
+            text-shadow: 0 0 10px rgba(78, 192, 255, 0.5);
             margin-bottom: 5px;
-            border-bottom: 2px solid #4ec0ff;
-            padding-bottom: 5px;
+            letter-spacing: 1px;
         }
 
         #status {
-            font-size: 12px;
+            font-size: 11px;
             color: #888;
-            font-style: italic;
             margin-bottom: 10px;
+            font-family: monospace;
         }
 
-        #score-box {
-            background: #333;
-            padding: 15px;
-            border-radius: 5px;
-            text-align: center;
-        }
-
-        #score-label {
-            font-size: 14px;
+        .stat-label {
+            font-size: 12px;
             color: #aaa;
             text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
         }
 
-        #score {
-            font-size: 32px;
+        .stat-value {
+            font-size: 28px;
             font-weight: bold;
             color: #4ec0ff;
         }
 
+        #level-value { color: #ffeb3b; }
+        #highscore-value { color: #ff0d72; }
+
+        #next-piece-canvas {
+            background: #000;
+            margin: 0 auto;
+            border: 1px solid #555;
+            border-radius: 4px;
+        }
+
         #message {
-            min-height: 40px;
+            min-height: 50px;
             color: #ffeb3b;
             font-weight: bold;
-            font-size: 18px;
-            text-align: center;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             line-height: 1.2;
-            word-wrap: break-word;
         }
 
         .controls {
-            font-size: 13px;
-            color: #ccc;
-            line-height: 1.6;
-            background: #333;
-            padding: 15px;
-            border-radius: 5px;
+            font-size: 12px;
+            color: #bbb;
+            text-align: left;
+            padding: 10px 15px;
         }
 
         .key {
+            display: inline-block;
             background: #555;
             padding: 2px 6px;
             border-radius: 4px;
-            font-weight: bold;
-            font-family: monospace;
             color: #fff;
+            font-family: monospace;
+            border-bottom: 2px solid #333;
+            margin-right: 5px;
         }
     </style>
 </head>
 <body>
 
-    <div id="game-container">
-        <canvas id="gameCanvas" width="300" height="600"></canvas>
+    <div id="game-layout">
+        <div class="canvas-container">
+            <canvas id="gameCanvas" width="300" height="600"></canvas>
+        </div>
         
         <div id="sidebar">
-            <div id="title">Textris</div>
-            <div id="status">Loading MIT Dictionary...</div>
+            <div style="text-align: center;">
+                <div id="title">TEXTRIS</div>
+                <div id="status">Initializing...</div>
+            </div>
             
-            <div id="score-box">
-                <div id="score-label">Score</div>
-                <div id="score">0</div>
+            <div class="panel">
+                <div class="stat-label">Score</div>
+                <div class="stat-value" id="score">0</div>
+            </div>
+
+            <div class="panel" style="display: flex; justify-content: space-between;">
+                <div>
+                    <div class="stat-label">Level</div>
+                    <div class="stat-value" id="level-value">1</div>
+                </div>
+                <div>
+                    <div class="stat-label">High Score</div>
+                    <div class="stat-value" id="highscore-value">0</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="stat-label">Next Piece</div>
+                <canvas id="next-piece-canvas" width="80" height="80"></canvas>
             </div>
 
             <div id="message"></div>
 
-            <div class="controls">
+            <div class="controls panel">
                 <div><span class="key">&larr;&rarr;</span> Move</div>
                 <div><span class="key">&uarr;</span> Rotate</div>
-                <div><span class="key">&darr;</span> Drop</div>
-                <br>
-                <div><span class="key">R</span> Restart Game</div>
+                <div><span class="key">&darr;</span> Soft Drop</div>
+                <div style="margin-top:5px"><span class="key">R</span> Restart</div>
             </div>
         </div>
     </div>
@@ -131,89 +170,100 @@
 <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
+    const nextCanvas = document.getElementById('next-piece-canvas');
+    const nextCtx = nextCanvas.getContext('2d');
     const statusDiv = document.getElementById('status');
 
     // --- CONFIG ---
     const COLS = 10;
     const ROWS = 20;
     const BLOCK_SIZE = 30;
+    const NEXT_BLOCK_SIZE = 20; // Smaller blocks for preview
+    
+    // Weighted Letter Distribution
     const LETTERS = "EEEEEEEEEEEEAAAAAAAAAIIIIIIIIIOOOOOOOONNNNNNRRRRRRTTTTTTLLLLSSSSUUUDDDDGGGBBCCMMPPFFHHVVWWYYKJXQZ";
     
-    // --- DICTIONARY LOADING ---
-    // Start with a minimal set while we fetch the big list
+    // --- DICTIONARY ---
     let DICTIONARY = new Set(["THE", "AND", "YOU", "FOR", "NOT", "BUT", "CAT", "DOG", "YES"]);
-    
-    // The specific MIT list you requested.
-    // We use 'allorigins' as a proxy to bypass CORS security restrictions in browsers.
     const TARGET_URL = "https://www.mit.edu/~ecprice/wordlist.10000";
     const DICT_URL = "https://api.allorigins.win/raw?url=" + encodeURIComponent(TARGET_URL);
 
     fetch(DICT_URL)
-        .then(response => {
-            if (!response.ok) throw new Error("Network response was not ok");
-            return response.text();
-        })
-        .then(text => {
-            const words = text.split(/\r?\n/);
-            let count = 0;
-            words.forEach(word => {
-                // The MIT list has words like "a", "aa". We only want 3+ letters.
-                let cleanWord = word.trim().toUpperCase();
-                if (cleanWord.length >= 3) {
-                    DICTIONARY.add(cleanWord);
-                    count++;
-                }
+        .then(r => { if(!r.ok) throw new Error(); return r.text(); })
+        .then(t => {
+            let c = 0;
+            t.split(/\r?\n/).forEach(w => {
+                let cl = w.trim().toUpperCase();
+                if(cl.length >= 3) { DICTIONARY.add(cl); c++; }
             });
-            statusDiv.innerText = `Dictionary Loaded (${count} words)`;
+            statusDiv.innerText = `Dictionary Ready (${c} words)`;
             statusDiv.style.color = "#0DFF72";
         })
-        .catch(err => {
-            console.error("Dictionary Load Error:", err);
-            statusDiv.innerText = "Error loading dictionary (Check Connection)";
-            statusDiv.style.color = "#FF0D72";
+        .catch(e => {
+            statusDiv.innerText = "Offline Mode (Basic Words)";
+            statusDiv.style.color = "#FF8E0D";
         });
 
-
     const SHAPES = [
-        [[1, 1, 1, 1]], 
-        [[1, 0, 0], [1, 1, 1]], 
-        [[0, 0, 1], [1, 1, 1]], 
-        [[1, 1], [1, 1]], 
-        [[0, 1, 1], [1, 1, 0]], 
-        [[0, 1, 0], [1, 1, 1]], 
-        [[1, 1, 0], [0, 1, 1]] 
+        [[1, 1, 1, 1]], // I
+        [[1, 0, 0], [1, 1, 1]], // J
+        [[0, 0, 1], [1, 1, 1]], // L
+        [[1, 1], [1, 1]], // O
+        [[0, 1, 1], [1, 1, 0]], // S
+        [[0, 1, 0], [1, 1, 1]], // T
+        [[1, 1, 0], [0, 1, 1]]  // Z
     ];
 
-    const COLORS = [
-        null, '#FF0D72', '#0DC2FF', '#0DFF72', '#F538FF', '#FF8E0D', '#FFE138', '#3877FF'
-    ];
+    const COLORS = [null, '#FF0D72', '#0DC2FF', '#0DFF72', '#F538FF', '#FF8E0D', '#FFE138', '#3877FF'];
+
+    // --- CLASSES ---
+
+    class Particle {
+        constructor(x, y, color) {
+            this.x = x;
+            this.y = y;
+            this.color = color;
+            this.size = Math.random() * 5 + 2;
+            this.speedX = Math.random() * 6 - 3;
+            this.speedY = Math.random() * 6 - 3;
+            this.life = 1.0; // Opacity
+        }
+        update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            this.life -= 0.03;
+            this.size *= 0.95;
+        }
+        draw(ctx) {
+            ctx.globalAlpha = this.life;
+            ctx.fillStyle = this.color;
+            ctx.fillRect(this.x, this.y, this.size, this.size);
+            ctx.globalAlpha = 1.0;
+        }
+    }
 
     // --- GAME STATE ---
     let grid = Array.from({length: ROWS}, () => Array(COLS).fill(null));
+    let particles = [];
     let score = 0;
+    let level = 1;
+    let highScore = localStorage.getItem('textris_highscore') || 0;
+    
     let dropCounter = 0;
     let dropInterval = 1000;
     let lastTime = 0;
     let gameOver = false;
 
-    let player = {
-        pos: {x: 0, y: 0},
-        matrix: null,
-        letters: null,
-        color: null
-    };
+    // We keep track of "current" and "next" piece
+    let player = { pos: {x:0, y:0}, matrix: null, letters: null, color: null };
+    let nextPiece = null;
 
     // --- LOGIC ---
-
-    function getRandomLetter() {
-        return LETTERS[Math.floor(Math.random() * LETTERS.length)];
-    }
 
     function createPiece() {
         const shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
         const color = COLORS[Math.floor(Math.random() * (COLORS.length - 1)) + 1];
-        const letters = shape.map(row => row.map(cell => cell ? getRandomLetter() : null));
-
+        const letters = shape.map(row => row.map(cell => cell ? LETTERS[Math.floor(Math.random() * LETTERS.length)] : null));
         return {
             matrix: shape,
             letters: letters,
@@ -225,36 +275,19 @@
     function rotate(matrix) {
         const N = matrix.length;
         const M = matrix[0].length;
-        let newMatrix = Array.from({length: M}, () => Array(N).fill(null));
+        let nm = Array.from({length: M}, () => Array(N).fill(null));
         for (let y = 0; y < N; y++) {
-            for (let x = 0; x < M; x++) {
-                newMatrix[x][N - 1 - y] = matrix[y][x];
-            }
+            for (let x = 0; x < M; x++) nm[x][N - 1 - y] = matrix[y][x];
         }
-        return newMatrix;
+        return nm;
     }
 
-    function playerRotate() {
-        const originalMatrix = player.matrix;
-        const originalLetters = player.letters;
-        
-        player.matrix = rotate(player.matrix);
-        player.letters = rotate(player.letters);
-        
-        if (collide(grid, player)) {
-            player.matrix = originalMatrix;
-            player.letters = originalLetters;
-        }
-    }
-
-    function collide(grid, player) {
-        const m = player.matrix;
-        const o = player.pos;
+    function collide(grid, p) {
+        const m = p.matrix;
+        const o = p.pos;
         for (let y = 0; y < m.length; ++y) {
             for (let x = 0; x < m[y].length; ++x) {
-                if (m[y][x] !== 0 && (grid[y + o.y] && grid[y + o.y][x + o.x]) !== null) {
-                    return true;
-                }
+                if (m[y][x] !== 0 && (grid[y + o.y] && grid[y + o.y][x + o.x]) !== null) return true;
             }
         }
         return false;
@@ -276,81 +309,140 @@
     function resetGame() {
         grid = Array.from({length: ROWS}, () => Array(COLS).fill(null));
         score = 0;
-        gameOver = false;
+        level = 1;
         dropInterval = 1000;
+        gameOver = false;
+        particles = [];
+        
         document.getElementById('score').innerText = "0";
+        document.getElementById('level-value').innerText = "1";
+        document.getElementById('highscore-value').innerText = highScore;
         document.getElementById('message').innerText = "";
+        
+        nextPiece = createPiece();
         playerReset();
     }
 
     function playerReset() {
-        const piece = createPiece();
+        // Promote next piece to current
+        const piece = nextPiece;
         player.matrix = piece.matrix;
         player.letters = piece.letters;
         player.color = piece.color;
         player.pos = piece.pos;
         
+        // Generate new next piece
+        nextPiece = createPiece();
+        drawNextPiece();
+
         if (collide(grid, player)) {
             gameOver = true;
             document.getElementById('message').innerText = "GAME OVER";
+            statusDiv.innerText = "Press R to Restart";
+        }
+    }
+
+    function playerRotate() {
+        const om = player.matrix;
+        const ol = player.letters;
+        player.matrix = rotate(player.matrix);
+        player.letters = rotate(player.letters);
+        if (collide(grid, player)) {
+            player.matrix = om;
+            player.letters = ol;
+        }
+    }
+
+    function spawnExplosion(cx, cy, color) {
+        // Convert grid coords to pixel coords
+        const px = cx * BLOCK_SIZE + BLOCK_SIZE/2;
+        const py = cy * BLOCK_SIZE + BLOCK_SIZE/2;
+        for(let i=0; i<10; i++) {
+            particles.push(new Particle(px, py, color));
         }
     }
 
     function checkWords() {
         let cellsToRemove = new Set();
         let wordsFound = [];
+        let cellsData = []; // Store x,y,color for explosion
+
+        // Helper to add cells
+        function addCells(y, x, len, isRow) {
+            for(let i=0; i<len; i++) {
+                let cy = isRow ? y : y+i;
+                let cx = isRow ? x+i : x;
+                cellsToRemove.add(`${cy},${cx}`);
+                if(grid[cy][cx]) {
+                    cellsData.push({x: cx, y: cy, color: grid[cy][cx].color});
+                }
+            }
+        }
 
         // Check Rows
         for (let y = 0; y < ROWS; y++) {
             let rowStr = grid[y].map(c => c ? c.char : ' ').join('');
-            
-            // Check every possible substring in the row against the dictionary
             for (let start = 0; start < COLS; start++) {
                 for (let end = start + 3; end <= COLS; end++) {
                     let sub = rowStr.substring(start, end).trim();
                     if (sub.length >= 3 && DICTIONARY.has(sub)) {
                          if(!wordsFound.includes(sub)) wordsFound.push(sub);
-                         for(let i=0; i<sub.length; i++) cellsToRemove.add(`${y},${start+i}`);
+                         addCells(y, start, sub.length, true);
                     }
                 }
             }
         }
 
-        // Check Columns
+        // Check Cols
         for (let x = 0; x < COLS; x++) {
             let colStr = "";
             for (let y = 0; y < ROWS; y++) {
                 colStr += grid[y][x] ? grid[y][x].char : ' ';
             }
-            
             for (let start = 0; start < ROWS; start++) {
                 for (let end = start + 3; end <= ROWS; end++) {
                     let sub = colStr.substring(start, end).trim();
                     if (sub.length >= 3 && DICTIONARY.has(sub)) {
                          if(!wordsFound.includes(sub)) wordsFound.push(sub);
-                         for(let i=0; i<sub.length; i++) cellsToRemove.add(`${start+i},${x}`);
+                         addCells(start, x, sub.length, false);
                     }
                 }
             }
         }
 
         if (cellsToRemove.size > 0) {
+            // EXPLOSIONS!
+            cellsData.forEach(c => spawnExplosion(c.x, c.y, c.color));
+
             cellsToRemove.forEach(key => {
                 let [y, x] = key.split(',').map(Number);
                 grid[y][x] = null;
             });
             
             let roundScore = 0;
-            wordsFound.forEach(w => {
-                // Scoring: Square of length * 10. 
-                // 3 letters = 90, 4 = 160, 5 = 250, etc.
-                roundScore += w.length * w.length * 10; 
-            });
+            wordsFound.forEach(w => roundScore += w.length * w.length * 10);
             score += roundScore;
 
+            // Level Up Check
+            const newLevel = Math.floor(score / 1000) + 1;
+            if(newLevel > level) {
+                level = newLevel;
+                dropInterval = Math.max(100, 1000 - (level * 100)); // Speed up
+            }
+
+            // High Score Check
+            if(score > highScore) {
+                highScore = score;
+                localStorage.setItem('textris_highscore', highScore);
+            }
+
+            // Update UI
             document.getElementById('score').innerText = score;
-            document.getElementById('message').innerText = "FOUND: " + wordsFound.join(", ");
-            setTimeout(() => { if(!gameOver) document.getElementById('message').innerText = ""; }, 3000);
+            document.getElementById('level-value').innerText = level;
+            document.getElementById('highscore-value').innerText = highScore;
+            document.getElementById('message').innerHTML = `<span style="color:#0DFF72">FOUND: ${wordsFound.join(", ")}</span>`;
+            
+            setTimeout(() => { if(!gameOver) document.getElementById('message').innerText = ""; }, 2500);
 
             applyGravity();
         }
@@ -383,47 +475,89 @@
         dropCounter = 0;
     }
 
-    function playerMove(dir) {
-        player.pos.x += dir;
-        if (collide(grid, player)) {
-            player.pos.x -= dir;
-        }
+    function drawBlock(ctx, x, y, char, color, size) {
+        ctx.fillStyle = color;
+        // Draw slightly smaller rect for grid effect
+        ctx.fillRect(x * size, y * size, size - 2, size - 2);
+        
+        // Pseudo-3D highlight
+        ctx.fillStyle = 'rgba(255,255,255,0.2)';
+        ctx.fillRect(x * size, y * size, size - 2, 4);
+
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold ' + (size*0.6) + 'px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(char, x * size + size/2, y * size + size/2);
     }
 
-    function draw() {
-        ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    function drawNextPiece() {
+        nextCtx.fillStyle = '#000';
+        nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
+        
+        if(!nextPiece) return;
 
-        // Draw Grid
-        grid.forEach((row, y) => {
+        // Center the piece in the preview box
+        const m = nextPiece.matrix;
+        const w = m[0].length * NEXT_BLOCK_SIZE;
+        const h = m.length * NEXT_BLOCK_SIZE;
+        const offX = (nextCanvas.width - w) / 2;
+        const offY = (nextCanvas.height - h) / 2;
+
+        m.forEach((row, y) => {
             row.forEach((value, x) => {
                 if (value) {
-                    drawBlock(x, y, value.char, value.color);
+                    // We manually draw here to handle offset
+                    const px = offX + x * NEXT_BLOCK_SIZE;
+                    const py = offY + y * NEXT_BLOCK_SIZE;
+                    
+                    nextCtx.fillStyle = nextPiece.color;
+                    nextCtx.fillRect(px, py, NEXT_BLOCK_SIZE - 2, NEXT_BLOCK_SIZE - 2);
+                    
+                    nextCtx.fillStyle = 'white';
+                    nextCtx.font = '12px Arial';
+                    nextCtx.textAlign = 'center';
+                    nextCtx.textBaseline = 'middle';
+                    nextCtx.fillText(nextPiece.letters[y][x], px + NEXT_BLOCK_SIZE/2, py + NEXT_BLOCK_SIZE/2);
                 }
             });
         });
+    }
 
-        // Draw Player
+    function draw() {
+        // Clear
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Grid
+        grid.forEach((row, y) => {
+            row.forEach((value, x) => {
+                if (value) drawBlock(ctx, x, y, value.char, value.color, BLOCK_SIZE);
+            });
+        });
+
+        // Ghost Piece (Optional visual aid)
+        // ... (Skipped for brevity, but you could add a ghost piece here)
+
+        // Player
         if (!gameOver) {
             player.matrix.forEach((row, y) => {
                 row.forEach((value, x) => {
                     if (value !== 0) {
-                        drawBlock(x + player.pos.x, y + player.pos.y, player.letters[y][x], player.color);
+                        drawBlock(ctx, x + player.pos.x, y + player.pos.y, player.letters[y][x], player.color, BLOCK_SIZE);
                     }
                 });
             });
         }
-    }
 
-    function drawBlock(x, y, char, color) {
-        ctx.fillStyle = color;
-        ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
-        
-        ctx.fillStyle = 'white';
-        ctx.font = 'bold 20px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(char, x * BLOCK_SIZE + BLOCK_SIZE/2, y * BLOCK_SIZE + BLOCK_SIZE/2);
+        // Particles
+        particles.forEach((p, index) => {
+            if(p.life <= 0) particles.splice(index, 1);
+            else {
+                p.update();
+                p.draw(ctx);
+            }
+        });
     }
 
     function update(time = 0) {
@@ -439,24 +573,17 @@
         requestAnimationFrame(update);
     }
 
-    // --- CONTROLS ---
     document.addEventListener('keydown', event => {
-        // Prevent default scrolling
-        if([37, 38, 39, 40].indexOf(event.keyCode) > -1) {
-            event.preventDefault();
-        }
-
-        if (event.keyCode === 82) { // R
-            resetGame();
-            return;
-        }
-
+        if([37, 38, 39, 40].indexOf(event.keyCode) > -1) event.preventDefault();
+        if (event.keyCode === 82) { resetGame(); return; }
         if (gameOver) return;
         
         if (event.keyCode === 37) { // Left
-            playerMove(-1);
+            player.pos.x--;
+            if (collide(grid, player)) player.pos.x++;
         } else if (event.keyCode === 39) { // Right
-            playerMove(1);
+            player.pos.x++;
+            if (collide(grid, player)) player.pos.x--;
         } else if (event.keyCode === 40) { // Down
             playerDrop();
         } else if (event.keyCode === 38) { // Up
@@ -464,7 +591,6 @@
         }
     });
 
-    // Start
     resetGame();
     update();
 
