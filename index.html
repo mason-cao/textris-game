@@ -249,12 +249,13 @@
     let particles = [];
     let score = 0;
     let level = 1;
-    let highScore = localStorage.getItem('textris_highscore') || 0;
+    let highScore = Number(localStorage.getItem('textris_highscore')) || 0;
     
     let dropCounter = 0;
     let dropInterval = 1000;
     let lastTime = 0;
     let gameOver = false;
+    let isHardDropping = false; // Flag for smooth hard drop
 
     let player = { pos: {x:0, y:0}, matrix: null, letters: null, color: null };
     let nextPiece = null;
@@ -313,6 +314,7 @@
         level = 1;
         dropInterval = 1000;
         gameOver = false;
+        isHardDropping = false;
         particles = [];
         
         document.getElementById('score').innerText = "0";
@@ -325,6 +327,9 @@
     }
 
     function playerReset() {
+        // Reset hard drop flag for the new piece
+        isHardDropping = false;
+
         const piece = nextPiece;
         player.matrix = piece.matrix;
         player.letters = piece.letters;
@@ -342,6 +347,8 @@
     }
 
     function playerRotate() {
+        if (isHardDropping) return; // Prevent rotation during hard drop
+
         const om = player.matrix;
         const ol = player.letters;
         player.matrix = rotate(player.matrix);
@@ -475,20 +482,8 @@
             player.pos.y--;
             merge(grid, player);
             checkWords();
-            playerReset();
+            playerReset(); // This will reset isHardDropping to false
         }
-        dropCounter = 0;
-    }
-
-    // --- NEW: HARD DROP FUNCTION ---
-    function playerHardDrop() {
-        while (!collide(grid, player)) {
-            player.pos.y++;
-        }
-        player.pos.y--; // Step back up from collision
-        merge(grid, player);
-        checkWords();
-        playerReset();
         dropCounter = 0;
     }
 
@@ -557,13 +552,15 @@
             });
         }
 
-        particles.forEach((p, index) => {
-            if(p.life <= 0) particles.splice(index, 1);
-            else {
-                p.update();
-                p.draw(ctx);
+        // Bug Fix: Iterate backwards to safely splice particles
+        for (let i = particles.length - 1; i >= 0; i--) {
+            let p = particles[i];
+            p.update();
+            p.draw(ctx);
+            if (p.life <= 0) {
+                particles.splice(i, 1);
             }
-        });
+        }
     }
 
     function update(time = 0) {
@@ -572,7 +569,14 @@
 
         if (!gameOver) {
             dropCounter += deltaTime;
-            if (dropCounter > dropInterval) playerDrop();
+            
+            // SMOOTH HARD DROP LOGIC
+            // If Hard Drop is active, we drop very fast (every 30ms)
+            let effectiveSpeed = isHardDropping ? 30 : dropInterval;
+
+            if (dropCounter > effectiveSpeed) {
+                playerDrop();
+            }
         }
         
         draw();
@@ -580,12 +584,15 @@
     }
 
     document.addEventListener('keydown', event => {
-        // Prevent default scrolling for Arrows and Spacebar (32)
+        // Prevent default scrolling for Arrows and Spacebar
         if([32, 37, 38, 39, 40].indexOf(event.keyCode) > -1) event.preventDefault();
         
         if (event.keyCode === 82) { resetGame(); return; }
         if (gameOver) return;
         
+        // Lock controls if we are currently "Hard Dropping" (smooth zoom)
+        if (isHardDropping) return;
+
         if (event.keyCode === 37) { // Left
             player.pos.x--;
             if (collide(grid, player)) player.pos.x++;
@@ -596,8 +603,9 @@
             playerDrop();
         } else if (event.keyCode === 38) { // Up
             playerRotate();
-        } else if (event.keyCode === 32) { // SPACE BAR (Hard Drop)
-            playerHardDrop();
+        } else if (event.keyCode === 32) { // SPACE BAR (Hard Drop Toggle)
+            isHardDropping = true;
+            dropCounter = 1000; // Force immediate drop tick
         }
     });
 
