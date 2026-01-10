@@ -36,11 +36,6 @@ Arrange falling letter blocks to spell words horizontally or vertically. Prevent
 * **Persistent Data:** Uses `localStorage` to track High Scores across browser sessions.
 
 
-## 📂 Project Structure
-
-* `index.html`: Contains the Game Loop, Rendering Logic, CSS Styling, and State Management.
-* `README.md`: Project documentation.
-
 ## 📄 License & Credits
 
 * **Development:** Original code by Mason Cao
