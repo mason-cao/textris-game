@@ -53,12 +53,13 @@
         }
 
         #title {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 800;
             color: #fff;
             text-shadow: 0 0 10px rgba(78, 192, 255, 0.5);
             margin-bottom: 5px;
             letter-spacing: 1px;
+            text-transform: uppercase;
         }
 
         #status {
@@ -100,6 +101,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            text-align: center;
             line-height: 1.2;
         }
 
@@ -131,7 +133,7 @@
         
         <div id="sidebar">
             <div style="text-align: center;">
-                <div id="title">TEXTRIS</div>
+                <div id="title">TEXTRIS PRO</div>
                 <div id="status">Initializing...</div>
             </div>
             
@@ -162,6 +164,7 @@
                 <div><span class="key">&larr;&rarr;</span> Move</div>
                 <div><span class="key">&uarr;</span> Rotate</div>
                 <div><span class="key">&darr;</span> Soft Drop</div>
+                <div style="margin-top:5px"><span class="key">Space</span> Hard Drop</div>
                 <div style="margin-top:5px"><span class="key">R</span> Restart</div>
             </div>
         </div>
@@ -178,9 +181,8 @@
     const COLS = 10;
     const ROWS = 20;
     const BLOCK_SIZE = 30;
-    const NEXT_BLOCK_SIZE = 20; // Smaller blocks for preview
+    const NEXT_BLOCK_SIZE = 20; 
     
-    // Weighted Letter Distribution
     const LETTERS = "EEEEEEEEEEEEAAAAAAAAAIIIIIIIIIOOOOOOOONNNNNNRRRRRRTTTTTTLLLLSSSSUUUDDDDGGGBBCCMMPPFFHHVVWWYYKJXQZ";
     
     // --- DICTIONARY ---
@@ -205,13 +207,13 @@
         });
 
     const SHAPES = [
-        [[1, 1, 1, 1]], // I
-        [[1, 0, 0], [1, 1, 1]], // J
-        [[0, 0, 1], [1, 1, 1]], // L
-        [[1, 1], [1, 1]], // O
-        [[0, 1, 1], [1, 1, 0]], // S
-        [[0, 1, 0], [1, 1, 1]], // T
-        [[1, 1, 0], [0, 1, 1]]  // Z
+        [[1, 1, 1, 1]], 
+        [[1, 0, 0], [1, 1, 1]], 
+        [[0, 0, 1], [1, 1, 1]], 
+        [[1, 1], [1, 1]], 
+        [[0, 1, 1], [1, 1, 0]], 
+        [[0, 1, 0], [1, 1, 1]], 
+        [[1, 1, 0], [0, 1, 1]] 
     ];
 
     const COLORS = [null, '#FF0D72', '#0DC2FF', '#0DFF72', '#F538FF', '#FF8E0D', '#FFE138', '#3877FF'];
@@ -226,7 +228,7 @@
             this.size = Math.random() * 5 + 2;
             this.speedX = Math.random() * 6 - 3;
             this.speedY = Math.random() * 6 - 3;
-            this.life = 1.0; // Opacity
+            this.life = 1.0; 
         }
         update() {
             this.x += this.speedX;
@@ -254,7 +256,6 @@
     let lastTime = 0;
     let gameOver = false;
 
-    // We keep track of "current" and "next" piece
     let player = { pos: {x:0, y:0}, matrix: null, letters: null, color: null };
     let nextPiece = null;
 
@@ -324,14 +325,12 @@
     }
 
     function playerReset() {
-        // Promote next piece to current
         const piece = nextPiece;
         player.matrix = piece.matrix;
         player.letters = piece.letters;
         player.color = piece.color;
         player.pos = piece.pos;
         
-        // Generate new next piece
         nextPiece = createPiece();
         drawNextPiece();
 
@@ -354,7 +353,6 @@
     }
 
     function spawnExplosion(cx, cy, color) {
-        // Convert grid coords to pixel coords
         const px = cx * BLOCK_SIZE + BLOCK_SIZE/2;
         const py = cy * BLOCK_SIZE + BLOCK_SIZE/2;
         for(let i=0; i<10; i++) {
@@ -365,9 +363,8 @@
     function checkWords() {
         let cellsToRemove = new Set();
         let wordsFound = [];
-        let cellsData = []; // Store x,y,color for explosion
+        let cellsData = [];
 
-        // Helper to add cells
         function addCells(y, x, len, isRow) {
             for(let i=0; i<len; i++) {
                 let cy = isRow ? y : y+i;
@@ -411,7 +408,6 @@
         }
 
         if (cellsToRemove.size > 0) {
-            // EXPLOSIONS!
             cellsData.forEach(c => spawnExplosion(c.x, c.y, c.color));
 
             cellsToRemove.forEach(key => {
@@ -423,26 +419,35 @@
             wordsFound.forEach(w => roundScore += w.length * w.length * 10);
             score += roundScore;
 
-            // Level Up Check
+            // --- LEVEL UP LOGIC ---
             const newLevel = Math.floor(score / 1000) + 1;
             if(newLevel > level) {
                 level = newLevel;
-                dropInterval = Math.max(100, 1000 - (level * 100)); // Speed up
+                // Aggressive Speed Increase (150ms faster per level, min 100ms)
+                dropInterval = Math.max(100, 1000 - ((level - 1) * 150)); 
+                
+                // Visual Alert
+                const msgBox = document.getElementById('message');
+                msgBox.innerHTML = `<span style="color:#FF0D72; font-size:18px;">⚠ LEVEL UP! ⚠<br>SPEED INCREASED</span>`;
+                setTimeout(() => { if(!gameOver && msgBox.innerText.includes("LEVEL UP")) msgBox.innerText = ""; }, 2500);
             }
+            // ----------------------
 
-            // High Score Check
             if(score > highScore) {
                 highScore = score;
                 localStorage.setItem('textris_highscore', highScore);
             }
 
-            // Update UI
             document.getElementById('score').innerText = score;
             document.getElementById('level-value').innerText = level;
             document.getElementById('highscore-value').innerText = highScore;
-            document.getElementById('message').innerHTML = `<span style="color:#0DFF72">FOUND: ${wordsFound.join(", ")}</span>`;
             
-            setTimeout(() => { if(!gameOver) document.getElementById('message').innerText = ""; }, 2500);
+            // Only overwrite message if it's not the Level Up warning
+            const msgBox = document.getElementById('message');
+            if (!msgBox.innerText.includes("LEVEL UP")) {
+                msgBox.innerHTML = `<span style="color:#0DFF72">FOUND: ${wordsFound.join(", ")}</span>`;
+                setTimeout(() => { if(!gameOver && msgBox.innerText.includes("FOUND")) msgBox.innerText = ""; }, 2500);
+            }
 
             applyGravity();
         }
@@ -475,12 +480,22 @@
         dropCounter = 0;
     }
 
+    // --- NEW: HARD DROP FUNCTION ---
+    function playerHardDrop() {
+        while (!collide(grid, player)) {
+            player.pos.y++;
+        }
+        player.pos.y--; // Step back up from collision
+        merge(grid, player);
+        checkWords();
+        playerReset();
+        dropCounter = 0;
+    }
+
     function drawBlock(ctx, x, y, char, color, size) {
         ctx.fillStyle = color;
-        // Draw slightly smaller rect for grid effect
         ctx.fillRect(x * size, y * size, size - 2, size - 2);
         
-        // Pseudo-3D highlight
         ctx.fillStyle = 'rgba(255,255,255,0.2)';
         ctx.fillRect(x * size, y * size, size - 2, 4);
 
@@ -497,7 +512,6 @@
         
         if(!nextPiece) return;
 
-        // Center the piece in the preview box
         const m = nextPiece.matrix;
         const w = m[0].length * NEXT_BLOCK_SIZE;
         const h = m.length * NEXT_BLOCK_SIZE;
@@ -507,7 +521,6 @@
         m.forEach((row, y) => {
             row.forEach((value, x) => {
                 if (value) {
-                    // We manually draw here to handle offset
                     const px = offX + x * NEXT_BLOCK_SIZE;
                     const py = offY + y * NEXT_BLOCK_SIZE;
                     
@@ -525,21 +538,15 @@
     }
 
     function draw() {
-        // Clear
         ctx.fillStyle = '#000';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Grid
         grid.forEach((row, y) => {
             row.forEach((value, x) => {
                 if (value) drawBlock(ctx, x, y, value.char, value.color, BLOCK_SIZE);
             });
         });
 
-        // Ghost Piece (Optional visual aid)
-        // ... (Skipped for brevity, but you could add a ghost piece here)
-
-        // Player
         if (!gameOver) {
             player.matrix.forEach((row, y) => {
                 row.forEach((value, x) => {
@@ -550,7 +557,6 @@
             });
         }
 
-        // Particles
         particles.forEach((p, index) => {
             if(p.life <= 0) particles.splice(index, 1);
             else {
@@ -574,7 +580,9 @@
     }
 
     document.addEventListener('keydown', event => {
-        if([37, 38, 39, 40].indexOf(event.keyCode) > -1) event.preventDefault();
+        // Prevent default scrolling for Arrows and Spacebar (32)
+        if([32, 37, 38, 39, 40].indexOf(event.keyCode) > -1) event.preventDefault();
+        
         if (event.keyCode === 82) { resetGame(); return; }
         if (gameOver) return;
         
@@ -588,6 +596,8 @@
             playerDrop();
         } else if (event.keyCode === 38) { // Up
             playerRotate();
+        } else if (event.keyCode === 32) { // SPACE BAR (Hard Drop)
+            playerHardDrop();
         }
     });
 
