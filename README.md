@@ -1,41 +1,49 @@
-# textris-game
 # Textris Pro 🧩📝
 
-A browser-based puzzle game that combines the falling-block mechanics of Tetris with the vocabulary skills of Scrabble.
+Textris Pro is a high-speed browser-based puzzle game that innovates on the classic falling-block genre by fusing spatial strategy with linguistic challenges.
 
-Link (In Progress): https://mason-cao.github.io/textris-game/
+## 📖 Overview
+
+Textris Pro challenges players to multitask between spatial organization and vocabulary recall. Unlike traditional block games, clearing lines requires forming valid English words of 3+ letters. The game features a dynamic physics engine where clearing words triggers a "gravity cascade," allowing for complex chain reactions.
+
+As a "Pro" iteration, this version features an aggressive difficulty curve. As players score points and level up, the drop speed increases drastically, introducing a high-stakes element that demands rapid reflexes and precise planning.
+
+**[Play the Live Demo Here](https://mason-cao.github.io/textris-game/)**
+
 ## 🎮 How to Play
 
-Blocks fall from the top of the screen, each containing a random letter. Your goal is to arrange them to spell valid English words.
+**Objective:**
+Arrange falling letter blocks to spell words horizontally or vertically. Prevent the stack from reaching the top of the grid.
 
-* **Move:** Left/Right Arrow Keys
-* **Rotate:** Up Arrow Key
-* **Soft Drop:** Down Arrow Key
-* **Restart:** Press 'R'
+**Controls:**
+* **⬅️ / ➡️ Arrows:** Move the active piece laterally.
+* **⬆️ Arrow:** Rotate the piece 90 degrees.
+* **⬇️ Arrow:** **Soft Drop** (Slightly accelerate descent).
+* **Spacebar:** **Smooth Hard Drop** (Engage hyper-gravity to rocket the piece to the bottom).
+* **R Key:** Instant Restart.
 
-### Rules
-1.  **Form Words:** Create words of **3 or more letters** horizontally or vertically.
-2.  **Clear Blocks:** Valid words explode and disappear, giving you points.
-3.  **Gravity:** Unlike classic Tetris, blocks float down to fill empty spaces, potentially creating chain reactions.
-4.  **Game Over:** The game ends if the stack reaches the top of the screen.
+**Scoring & Difficulty:**
+* **Words:** Valid words explode into particles and award points based on length squared.
+* **Gravity:** Remaining blocks fall to fill empty spaces.
+* **Leveling:** Every 1,000 points, the game levels up. **Warning:** Speed increases significantly with each level.
 
-## ✨ Features
+## ✨ Technical Features
 
-* **Dynamic Dictionary:** Fetches a 10,000-word dictionary (MIT Wordlist) in real-time using the Fetch API.
-* **Physics Mechanics:** "Sticky" gravity allows for complex board manipulation and chain reactions.
-* **Progression System:** The game speeds up as you score points and level up.
-* **Visual Effects:** Particle explosions when words are cleared and a "Next Piece" preview window.
-* **High Score:** Uses LocalStorage to save your best score even after closing the browser.
-
-## 🛠️ Built With
-
-* **HTML5 Canvas** (Rendering the game grid and particles)
-* **Vanilla JavaScript** (Game logic, collision detection, and state management)
-* **CSS3** (Styling the UI layout)
-* **External API:** Uses `allorigins.win` as a CORS proxy to fetch the wordlist.
+* **Custom Engine:** Built entirely in Vanilla JavaScript and HTML5 Canvas without external game engines (Unity/Godot).
+* **Live Dictionary Integration:** Utilizes the Fetch API to load a 10,000-word MIT dataset, parsed into a JavaScript `Set` for O(1) constant-time lookup performance.
+* **Hyper-Gravity Logic:** Implements a smooth "Hard Drop" mechanic that locks user input and accelerates the piece frame-by-frame rather than teleporting it, preventing collision clipping errors.
+* **Particle System:** Custom particle class manages visual feedback for word clears.
+* **Persistent Data:** Uses `localStorage` to track High Scores across browser sessions.
 
 
-## 📄 Credits
+## 📂 Project Structure
 
-* Wordlist provided by [MIT](https://www.mit.edu/~ecprice/wordlist.10000).
-* Game logic built from scratch in JavaScript.
+* `index.html`: Contains the Game Loop, Rendering Logic, CSS Styling, and State Management.
+* `README.md`: Project documentation.
+
+## 📄 License & Credits
+
+* **Development:** Original code by Mason Cao
+* **Wordlist Source:** [MIT 10000 Common Words](https://www.mit.edu/~ecprice/wordlist.10000).
+
+---
